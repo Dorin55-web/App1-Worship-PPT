@@ -1,225 +1,225 @@
 # Worship PPT Generator
 
-## Descriere Generală
+## General Description
 
-**Worship PPT Generator** este o aplicație desktop modernă pentru Windows care transformă versurile cântărilor creștine de pe internet în prezentări PowerPoint profesionale, gata de utilizat în biserici sau grupuri de închinare.
+**Worship PPT Generator** is a modern desktop application for Windows that transforms Christian worship song lyrics from the internet into professional PowerPoint presentations, ready to be used in churches or worship groups.
 
-## 🎯 Scopul Aplicației
+## 🎯 Application Goal
 
-Aplicația extrage automat versurile cântărilor de pe site-ul **resursecrestine.ro** și le convertește în fișiere PowerPoint (.pptx) formatate profesional, cu:
-- Text centrat și dimensionat optim
-- Background negru (ideal pentru proiecție)
-- Fonturi adaptate pentru lizibilitate
-- Slide-uri organizate logic (strofe, refrene)
+The application automatically extracts song lyrics from the website **resursecrestine.ro** and converts them into professionally formatted PowerPoint (.pptx) files, featuring:
+- Centered and optimally sized text
+- Black background (ideal for projection)
+- Fonts adapted for readability
+- Logically organized slides (verses, choruses)
 
-## ✨ Funcționalități Principale
+## ✨ Main Features
 
-### 1. **Extragere Automată**
-- Preia cântece de pe resursecrestine.ro folosind URL-ul
-- Parsează automat structura: strofe, refrene, punți, code
-- Detectează și gestionează multiple refrene (R1, R2, etc.)
+### 1. **Automatic Extraction**
+- Fetches songs from resursecrestine.ro using the URL
+- Automatically parses the structure: verses, choruses, bridges, codas
+- Detects and handles multiple choruses (C1, C2, etc.)
 
-### 2. **Preview în Timp Real**
-- Vizualizare a tuturor slide-urilor înainte de generare
-- Navigare cu Previous/Next între slide-uri
-- Lista completă de slide-uri în panoul stâng
-- Imagine preview generată identic cu PowerPoint-ul final
+### 2. **Real-Time Preview**
+- Preview of all slides before generation
+- Navigate with Previous/Next between slides
+- Full list of slides in the left panel
+- Preview image generated identically to the final PowerPoint
 
-### 3. **Editare Flexibilă**
-- Editare text direct în aplicație
-- Ajustare dimensiune font (±2pt)
-- Detectare automată font optim pentru fiecare slide
-- Procesare inteligentă a refrenelor (marcaje /: :/)
+### 3. **Flexible Editing**
+- Edit text directly in the application
+- Font size adjustment (±2pt)
+- Automatic detection of the optimal font for each slide
+- Smart processing for choruses (/: :/ markers)
 
-### 4. **Generare PowerPoint**
-- Creare fișiere .pptx profesionale
-- Format 16:9 (widescreen)
-- Font Calibri, text alb pe fundal negru
-- "Amin" automat pe ultimul slide
-- Thumbnail preview în Windows Explorer
+### 4. **PowerPoint Generation**
+- Create professional .pptx files
+- 16:9 format (widescreen)
+- Calibri font, white text on black background
+- Automatic "Amin" (Amen) on the last slide
+- Thumbnail preview in Windows Explorer
 
-### 5. **Management Cântece**
-- Istoric al cântecelor generate (salvat local)
-- Deschidere automată după generare (opțional)
-- Salvare în folder configurabil
-- Generare nume fișier inteligentă (fără diacritice, max 4 cuvinte)
+### 5. **Song Management**
+- History of generated songs (saved locally)
+- Auto-open after generation (optional)
+- Save in a configurable folder
+- Smart filename generation (no diacritics, max 4 words)
 
-### 6. **Setări Personalizabile**
-- Locație customizată pentru salvare fișiere
-- Toggle "Auto Open" - deschide automat PowerPoint după generare
-- Configurații persistente între sesiuni
+### 6. **Customizable Settings**
+- Custom location for saving files
+- "Auto Open" toggle - automatically opens PowerPoint after generation
+- Persistent configurations between sessions
 
-## 🖥️ Interfața Utilizator
+## 🖥️ User Interface
 
-### Design Modern (Dark Theme)
-- **Sidebar** (80px): Navigare rapidă (Home, Setări)
-- **Lista Slide-uri** (250px): Toate slide-urile vizibile, clicabile
-- **Zona Principală**:
-  - Input URL + buton Run
-  - Preview imagine (640x360px)
-  - Navigare Previous/Next cu counter
-  - Control font (+/-)
-  - Buton Edit Text
-  - Status bar cu informații
+### Modern Design (Dark Theme)
+- **Sidebar** (80px): Quick navigation (Home, Settings)
+- **Slide List** (250px): All slides visible and clickable
+- **Main Area**:
+  - URL Input + Run button
+  - Image preview (640x360px)
+  - Previous/Next navigation with counter
+  - Font control (+/-)
+  - Edit Text button
+  - Status bar with information
 
-### Temă de Culori
-- Fundal: `#0d1117` (GitHub dark)
-- Carduri: `#161b22`
-- Accent cyan: `#00d4ff`
-- Accent purple: `#7c3aed`
-- Text alb și gri pentru contrast optim
+### Color Theme
+- Background: `#0d1117` (GitHub dark)
+- Cards: `#161b22`
+- Cyan accent: `#00d4ff`
+- Purple accent: `#7c3aed`
+- White and gray text for optimal contrast
 
-## 🔄 Fluxul de Lucru Tipic
+## 🔄 Typical Workflow
 
 ```
-1. Deschidere aplicație
-   └─► Interfața modernă se încarcă instant
+1. Open Application
+   └─► Modern interface loads instantly
 
-2. Introducere URL
-   └─► Utilizatorul lipește URL-ul cântării
+2. Enter URL
+   └─► User pastes the song URL
 
-3. Apăsare "Run"
-   └─► Aplicația extrage și parsează cântarea (2-3 secunde)
-   └─► Afișează preview primului slide
-   └─► Listează toate slide-urile în panoul stâng
+3. Click "Run"
+   └─► App extracts and parses the song (2-3 seconds)
+   └─► Displays preview of the first slide
+   └─► Lists all slides in the left panel
 
-4. Navigare și Editare (opțional)
-   └─► Previous/Next pentru vizualizare toate slide-urile
-   └─► Ajustare font dacă e necesar
-   └─► Editare text direct dacă e cazul
+4. Navigate and Edit (optional)
+   └─► Previous/Next to view all slides
+   └─► Adjust font if necessary
+   └─► Edit text directly if needed
 
-5. Generare PowerPoint
-   └─► Apăsare buton "Generate"
-   └─► Fișierul .pptx este creat în folderul output
-   └─► Deschide automat în PowerPoint (dacă e activat)
+5. Generate PowerPoint
+   └─► Click "Generate" button
+   └─► .pptx file is created in the output folder
+   └─► Auto-opens in PowerPoint (if enabled)
 
-6. Utilizare în Proiecție
-   └─► PowerPoint gata de prezentat în biserică
+6. Use in Projection
+   └─► PowerPoint ready to present in church
 ```
 
-## 🛠️ Tehnologii Utilizate
+## 🛠️ Used Technologies
 
-### Stack Tehnic
-- **Python 3.12** - Limbaj de programare
-- **Flet 0.80.5** - Framework UI modern (Flutter-based)
-- **python-pptx** - Generare fișiere PowerPoint
-- **BeautifulSoup4** - Web scraping și parsing HTML
-- **Pillow** - Generare imagini preview și thumbnails
-- **Flutter** - Build nativ Windows
+### Technical Stack
+- **Python 3.12** - Programming language
+- **Flet 0.80.5** - Modern UI framework (Flutter-based)
+- **python-pptx** - PowerPoint file generation
+- **BeautifulSoup4** - Web scraping and HTML parsing
+- **Pillow** - Preview image and thumbnail generation
+- **Flutter** - Native Windows build
 
-### Arhitectură Modulară
+### Modular Architecture
 ```
 App1/
-├── core/          # Motorul aplicației (scraper, parser, generator)
-├── flet_ui/       # Interfața grafică modernă
-├── services/      # Logica de business
-├── config/        # Configurări și setări
-├── data/          # Istoric și date locale
-└── output/        # Fișiere PowerPoint generate
+├── core/          # Application engine (scraper, parser, generator)
+├── flet_ui/       # Modern graphical interface
+├── services/      # Business logic
+├── config/        # Configurations and settings
+├── data/          # Local history and data
+└── output/        # Generated PowerPoint files
 ```
 
-## 📦 Distribuție și Instalare
+## 📦 Distribution and Installation
 
-### Pentru Utilizatori Finali
-- **Executabil Windows** (.exe) - 71 MB
-- **Nu necesită instalare** - rulează direct
-- **Nu necesită Python** sau alte dependențe
-- **Portable** - poate fi rulat de pe USB sau orice locație
+### For End Users
+- **Windows Executable** (.exe) - 71 MB
+- **No installation required** - runs directly
+- **No Python required** or other dependencies
+- **Portable** - can run from a USB drive or any location
 
-### Pentru Dezvoltatori
+### For Developers
 ```bash
-# Clonare repository
+# Clone repository
 git clone <repo-url>
 cd App1
 
-# Creare mediu virtual
+# Create virtual environment
 python -m venv venv
 venv\Scripts\activate
 
-# Instalare dependențe
+# Install dependencies
 pip install -r requirements.txt
 
-# Rulare aplicație
+# Run application
 python main.py
 
-# Sau build executabil
+# Or build executable
 python build_windows.py
 ```
 
-## 🎨 Caracteristici Tehnice Avansate
+## 🎨 Advanced Technical Features
 
-### 1. **Procesare Text Inteligentă**
-- Detectare automată strofe vs refrene
-- Gestionare refrene multiple (R1, R2 la final)
-- Marcaje refren automate (/::/)
-- Eliminare diacritice din nume fișiere
+### 1. **Smart Text Processing**
+- Automatic detection of verses vs choruses
+- Handling multiple choruses (C1, C2 at the end)
+- Automatic chorus markers (/::/)
+- Diacritics removal from filenames
 
-### 2. **Optimizare Font**
-- Calculare automată dimensiune font optimă
-- Scalare inteligentă bazată pe lungimea textului
-- Limitare 20-72pt pentru lizibilitate
-- Spațiere optimă între linii
+### 2. **Font Optimization**
+- Automatic calculation of optimal font size
+- Smart scaling based on text length
+- Limit 20-72pt for readability
+- Optimal line spacing
 
 ### 3. **Thumbnail Generation**
-- Creare automată thumbnail pentru Windows Explorer
-- Dimensiune 320x180px (aspect ratio 16:9)
-- Font scalabil consistent
-- Fundal negru cu text alb
+- Automatic thumbnail creation for Windows Explorer
+- Size 320x180px (16:9 aspect ratio)
+- Consistent scalable font
+- Black background with white text
 
 ### 4. **Error Handling**
-- Prindere și afișare erori în interfață
-- Validare URL înainte de procesare
-- Fallback-uri pentru fonturi lipsă
-- Logging detaliat pentru debugging
+- Catch and display errors in the interface
+- URL validation before processing
+- Fallbacks for missing fonts
+- Detailed logging for debugging
 
-## 📋 Cerințe Sistem
+## 📋 System Requirements
 
-### Minime
+### Minimum
 - **OS**: Windows 10/11 (64-bit)
 - **RAM**: 4 GB
-- **Disk**: 100 MB spațiu liber
-- **Internet**: Conexiune pentru descărcare cântece
+- **Disk**: 100 MB free space
+- **Internet**: Connection for downloading songs
 
-### Recomandate
+### Recommended
 - **OS**: Windows 11
 - **RAM**: 8 GB
-- **Disk**: 500 MB (pentru fișiere generate)
-- **Microsoft PowerPoint**: Pentru vizualizare (opțional)
+- **Disk**: 500 MB (for generated files)
+- **Microsoft PowerPoint**: For viewing (optional)
 
-## 🎯 Públic Țintă
+## 🎯 Target Audience
 
-- **Lideri de închinare** din biserici
-- **Tehnicieni audio-video** responsabili cu proiecția
-- **Grupuri de tineret** care folosesc cântece proiectate
-- **Orice persoană** care vrea să creeze prezentări profesionale rapid
+- **Worship leaders** in churches
+- **Audio-visual technicians** responsible for projection
+- **Youth groups** using projected songs
+- **Anyone** who wants to create professional presentations quickly
 
-## 🚀 Avantaje Competitiv
+## 🚀 Competitive Advantages
 
-✅ **Rapid**: Generează PowerPoint în 5-10 secunde  
-✅ **Ușor**: Interfață intuitivă, fără training necesar  
-✅ **Profesional**: Rezultate de calitate, gata de prezentare  
-✅ **Gratuit**: Open source, fără costuri  
-✅ **Modern**: UI contemporary, dark theme  
-✅ **Portabil**: Nu necesită instalare complexă  
+✅ **Fast**: Generates PowerPoint in 5-10 seconds  
+✅ **Easy**: Intuitive interface, no training required  
+✅ **Professional**: Quality results, ready to present  
+✅ **Free**: Open source, no costs  
+✅ **Modern**: Contemporary UI, dark theme  
+✅ **Portable**: No complex installation required  
 
-## 📝 Exemple de Utilizare
+## 📝 Use Case Examples
 
-### Scenariu 1: Duminică Dimineața
-> "Am nevoie de cântarea 'Mare Ești Tu' pentru serviciu. Copiez URL-ul din site, dau paste în aplicație, apăs Run, verific slide-urile, apăs Generate. Gata în 10 secunde!"
+### Scenario 1: Sunday Morning
+> "I need the song 'Great Are You Lord' for the service. I copy the URL from the site, paste it in the app, click Run, check the slides, click Generate. Done in 10 seconds!"
 
-### Scenariu 2: Pregătire Conferință
-> "Trebuie să pregătesc 20 de cântece pentru conferință. Folosesc aplicația pentru fiecare, le salvez în folderul conferinței, apoi le încarc pe laptop-ul de prezentare."
+### Scenario 2: Conference Preparation
+> "I need to prepare 20 songs for the conference. I use the app for each one, save them in the conference folder, then load them onto the presentation laptop."
 
-### Scenariu 3: Modificare Urgentă
-> "Am observat o greșeală într-un vers. Deschid aplicația, încarc cântarea, editez textul direct în interfață, regenerez. Corectat în 30 de secunde!"
+### Scenario 3: Urgent Modification
+> "I noticed a mistake in a verse. I open the app, load the song, edit the text directly in the interface, regenerate. Fixed in 30 seconds!"
 
-## 🏆 Concluzie
+## 🏆 Conclusion
 
-**Worship PPT Generator** este o soluție completă, modernă și eficientă pentru crearea prezentărilor PowerPoint cu versuri de cântece creștine. Combină puterea Python cu o interfață modernă Flet pentru a oferi o experiență utilizator superioară, economisind timp prețios în pregătirea materialelor pentru închinare.
+**Worship PPT Generator** is a complete, modern, and efficient solution for creating PowerPoint presentations with Christian worship song lyrics. It combines the power of Python with a modern Flet interface to deliver a superior user experience, saving valuable time when preparing worship materials.
 
 ---
 
-**Versiune**: 1.0.0  
-**Platformă**: Windows 10/11  
-**Tehnologii**: Python, Flet, Flutter  
-**Licență**: Open Source
+**Version**: 1.0.0  
+**Platform**: Windows 10/11  
+**Technologies**: Python, Flet, Flutter  
+**License**: Open Source
