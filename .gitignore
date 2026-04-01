@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+output/
+data/history.json
+.idea/
+.vscode/
+*.egg-info/
+dist/
+build/
+.claude/
+.cursor/
