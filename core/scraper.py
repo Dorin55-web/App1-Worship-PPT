@@ -1,4 +1,5 @@
 import requests
+import re
 from bs4 import BeautifulSoup
 from typing import Tuple, Optional
 
@@ -87,13 +88,16 @@ def _extract_lyrics(soup: BeautifulSoup) -> Optional[str]:
     
     # Cauta unde incep versurile
     start_markers = [
+        "Strofă 1", "Strofă 2", "Strofă 3",
         "Strofa 1", "Strofa 2", "Strofa 3",
         "R: /:", "R:/:", "R:", "Refren", "REFREN",
         "1. ", "1.",
         "Paradis", "Doamne", "Isus", "Dumnezeu"
     ]
     
+    # Gaseste cel mai devreme marker valid (nu primul din lista)
     idx_start = -1
+    best_marker = None
     for marker in start_markers:
         idx = all_text.find(marker)
         if idx != -1:
@@ -101,8 +105,11 @@ def _extract_lyrics(soup: BeautifulSoup) -> Optional[str]:
             context = all_text[max(0, idx-50):idx+100]
             # Verificare mai permisiva - daca gasim "1." sau "strofa" sau versuri tipice
             if any(v in context.lower() for v in ["strofa", "strofă", "refren", "r:", "1.", "2.", "3.", "/:", ":/", "când", "cum", "de unde"]):
-                idx_start = idx
-                break
+                if idx_start == -1 or idx < idx_start:
+                    idx_start = idx
+                    best_marker = marker
+    
+    print(f"DEBUG: Found marker '{best_marker}' at position {idx_start}")
     
     if idx_start == -1:
         return None
@@ -143,7 +150,7 @@ def _clean_lyrics_text(text: str) -> str:
         "resurse crestine", "text", "cantece", "audio", "video", "biblia",
         "mai multe", "doneaza", "toate resursele", "titlu", "autor", "album",
         "continut", "acorduri", "partitura", "powerpoint",
-        "⛶", "▲", "x", "|", "fara album", "tematica:", "diverse",
+        "⛶", "▲", "|", "fara album", "tematica:", "diverse",
         "resursa adaugata de", "media", "voturi",
         "confirmata de", "orchestra", "1 / 1", "1/1"
     ]
@@ -173,6 +180,16 @@ def _clean_lyrics_text(text: str) -> str:
         
         # Ignora liniile care sunt doar data (ex: "05/06/2018")
         if len(line_stripped) == 10 and line_stripped.count("/") == 2:
+            continue
+        
+        # Elimina indicatori de repetare muzicala de la finalul liniei
+        # Ex: "x2", "x3", "2x", "(bis)", "(2x)" etc.
+        line_stripped = re.sub(r'\s*x\s*\d+\s*$', '', line_stripped, flags=re.IGNORECASE)  # " x2", "x2"
+        line_stripped = re.sub(r'\s*\d+\s*x\s*$', '', line_stripped, flags=re.IGNORECASE)  # "2x", "3x"
+        line_stripped = re.sub(r'\s*\(\s*(?:bis|\d+x?)\s*\)\s*$', '', line_stripped, flags=re.IGNORECASE)  # "(bis)", "(2x)"
+        
+        # Dupa curatare, daca linia a ramas goala, o ignoram
+        if not line_stripped.strip():
             continue
         
         cleaned_lines.append(line_stripped)

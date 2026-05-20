@@ -204,10 +204,15 @@ def _save_section(section_type, key, lines, stanzas, refrains, bridges, codas):
                 # Marcajul există dar e lipit de text — adaugă spațiu
                 lines_list[0] = '/: ' + lines_list[0][2:].lstrip()
 
-            # Adaugă :/ la ultima linie dacă nu există deja
+            # Adaugă marcaj de sfârșit la ultima linie dacă nu există deja
             last_line = lines_list[-1].strip()
-            if not last_line.endswith(':/'):
+            # Verifică ambele formate: :/ (standard) sau /: (format resursecrestine.ro)
+            has_end_marker = last_line.endswith(':/') or last_line.endswith('/:')
+            if not has_end_marker:
                 lines_list[-1] = f"{lines_list[-1]} :/"
+            elif last_line.endswith('/:'):
+                # Site-ul folosește /: la sfârșit în loc de :/ - normalizează
+                lines_list[-1] = last_line[:-2] + ' :/'
             
             text = '\n'.join(lines_list)
         

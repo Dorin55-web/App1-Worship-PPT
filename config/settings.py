@@ -11,7 +11,10 @@ DEFAULT_CONFIG = {
     "app": {
         "language": "ro",
         "max_history": 5,
-        "default_output_dir": "./output"
+        "default_output_dir": "./output",
+        "auto_open_ppt": True,
+        "hotkey_enabled": True,
+        "hotkey_combination": "f8"
     },
     "verses": {
         "font_family": "Calibri",

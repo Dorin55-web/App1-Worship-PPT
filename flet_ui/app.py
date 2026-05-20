@@ -1,6 +1,8 @@
 import flet as ft
 import sys
 import os
+import time
+import threading
 import tempfile
 from io import BytesIO
 from PIL import Image, ImageDraw, ImageFont
@@ -9,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.settings import load_config, ensure_directories, save_config
 from services.song_service import SongService
+from services.hotkey_manager import HotkeyManager
 from core.scraper import scrape_song
 from core.parser import parse_song
 from core.font_calculator import calculate_font_size
@@ -47,6 +50,12 @@ class WorshipPPTApp:
         self.editing_mode = False
         self.edit_text_field = None
         
+        # Hotkey manager pentru captură globală URL
+        self.hotkey_manager = HotkeyManager()
+        self.hotkey_manager.set_callback(self._on_hotkey_url)
+        self._hotkey_check_running = False
+        self._pending_hotkey_url = None  # URL primit prin hotkey, procesat în UI loop
+        
         self.setup_ui()
     
     def setup_ui(self):
@@ -74,6 +83,88 @@ class WorshipPPTApp:
         
         self.main_layout.controls = [self.sidebar, self.slide_list_panel, self.content_area]
         self.page.add(self.main_layout)
+        
+        # Porneste sistemul de hotkey global
+        self._start_hotkey_system()
+    
+    def _start_hotkey_system(self):
+        """Porneste ascultatorul de hotkey global si verificarea periodica."""
+        try:
+            self.hotkey_manager.start()
+            self._hotkey_check_running = True
+            
+            # Porneste thread-ul de verificare a cozii
+            import threading
+            self._hotkey_thread = threading.Thread(
+                target=self._hotkey_queue_loop,
+                daemon=True
+            )
+            self._hotkey_thread.start()
+            
+            print("[UI] Hotkey system started - Press F8 to capture URL")
+        except Exception as e:
+            print(f"[UI] Failed to start hotkey system: {e}")
+    
+    def _hotkey_queue_loop(self):
+        """Loop care verifica periodic coada de URL-uri (ruleaza pe thread separat)."""
+        while self._hotkey_check_running:
+            try:
+                self.hotkey_manager.check_and_process()
+                
+                # Verifica daca exista un URL pending si il proceseaza pe main thread
+                if self._pending_hotkey_url:
+                    url = self._pending_hotkey_url
+                    self._pending_hotkey_url = None  # Clear immediately to prevent loop
+                    # Proceseaza pe main thread folosind run_task
+                    self.page.run_task(self._process_hotkey_async, url)
+                        
+            except Exception as e:
+                print(f"[UI] Hotkey queue error: {e}")
+            time.sleep(0.2)  # Verifica la fiecare 200ms
+    
+    async def _process_hotkey_async(self, url):
+        """Proceseaza URL-ul primit prin hotkey (ruleaza pe main thread)."""
+        try:
+            print(f"[UI] Processing hotkey URL on main thread: {url}")
+            
+            # Reset UI
+            self.slides_data = []
+            self.current_slide_index = 0
+            self.current_song = None
+            self.slide_list_panel.visible = False
+            self.slide_list_view.controls = []
+            self.slide_info.value = "Slide 0/0"
+            self.preview_image.content = ft.Container(
+                width=640,
+                height=360,
+                bgcolor=self.COLOR_BG_DARK,
+                border_radius=16,
+            )
+            
+            # Seteaza URL-ul
+            self.url_input.value = url
+            self.status_text.value = "URL captured via hotkey! Processing..."
+            self.status_text.color = self.COLOR_CYAN
+            self.page.update()
+            
+            # Declanseaza automat scraping-ul (ruleaza pe main thread)
+            self.on_fetch_click(None)
+            
+        except Exception as ex:
+            print(f"[UI] Error processing hotkey URL: {ex}")
+    
+    def _process_hotkey_url(self, url):
+        """Proceseaza URL-ul primit prin hotkey (metoda veche, pastrata pentru compatibilitate)."""
+        pass
+    
+    def _on_hotkey_url(self, url: str):
+        """Handler apelat cand un URL este capturat prin hotkey.
+        
+        NU actualizeaza UI direct - doar salveaza URL-ul pentru procesare
+        in UI loop-ul principal.
+        """
+        self._pending_hotkey_url = url
+        print(f"[UI] URL received via hotkey: {url}")
     
     def _create_sidebar(self):
         """Creează sidebar-ul modern (80px)."""

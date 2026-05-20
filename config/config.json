@@ -2,7 +2,7 @@
   "app": {
     "language": "ro",
     "max_history": 5,
-    "default_output_dir": "C:\\Users\\balae\\OneDrive\\Desktop\\new",
+    "default_output_dir": "./output",
     "auto_open_ppt": true
   },
   "verses": {

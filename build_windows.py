@@ -7,8 +7,8 @@ import shutil
 import subprocess
 import tempfile
 
-PROJECT_DIR = r"C:\Users\balae\OneDrive\Desktop\App1"
-FLUTTER_DIR = r"C:\Users\balae\flutter\3.38.7"
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+FLUTTER_DIR = os.path.join(os.path.expanduser("~"), "flutter", "3.38.7")
 FLET_EXE = os.path.join(PROJECT_DIR, "venv", "Scripts", "flet.exe")
 
 def clean_build():
@@ -21,7 +21,7 @@ def clean_build():
     # Listeaza ce trebuie copiat
     items_to_copy = [
         'main.py', 'requirements.txt', 'pyproject.toml',
-        'config', 'core', 'flet_ui', 'services', 'start'
+        'config', 'core', 'flet_ui', 'services', 'start', 'interfaces'
     ]
     
     print("[INFO] Copiere fisiere in director temporar...")
