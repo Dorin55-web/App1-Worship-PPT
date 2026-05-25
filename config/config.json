@@ -3,7 +3,9 @@
     "language": "ro",
     "max_history": 5,
     "default_output_dir": "./output",
-    "auto_open_ppt": true
+    "auto_open_ppt": true,
+    "search_enabled": true,
+    "search_directory": ""
   },
   "verses": {
     "font_family": "Calibri",

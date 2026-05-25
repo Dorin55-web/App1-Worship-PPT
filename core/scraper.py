@@ -83,7 +83,32 @@ def _extract_title(soup: BeautifulSoup, url: str) -> str:
 def _extract_lyrics(soup: BeautifulSoup) -> Optional[str]:
     """Extrage textul versurilor din HTML."""
     
-    # Obtine tot textul din pagina
+    # STRATEGIA 1: Cauta containerul principal cu versuri (formatat)
+    # Acest div contine versurile deja structurate
+    resized_container = soup.find("div", class_="resized-text")
+    if resized_container:
+        # Extrage textul pastrand structura cu newline-uri
+        lyrics = resized_container.get_text(separator="\n", strip=True)
+        cleaned = _clean_lyrics_text(lyrics)
+        if cleaned and len(cleaned) > 50:
+            return cleaned
+    
+    # STRATEGIA 2: Cauta strofe individuale (strofa-text)
+    strofa_divs = soup.find_all("div", class_="strofa-text")
+    if strofa_divs:
+        parts = []
+        for div in strofa_divs:
+            text = div.get_text(separator="\n", strip=True)
+            if text:
+                parts.append(text)
+        if parts:
+            lyrics = "\n\n".join(parts)
+            cleaned = _clean_lyrics_text(lyrics)
+            if cleaned and len(cleaned) > 50:
+                return cleaned
+    
+    # STRATEGIA 3 (fallback): Parseaza tot textul paginii
+    # Folosit doar daca strategiile de mai sus nu functioneaza
     all_text = soup.get_text(separator="\n", strip=True)
     
     # Cauta unde incep versurile
@@ -108,8 +133,6 @@ def _extract_lyrics(soup: BeautifulSoup) -> Optional[str]:
                 if idx_start == -1 or idx < idx_start:
                     idx_start = idx
                     best_marker = marker
-    
-    print(f"DEBUG: Found marker '{best_marker}' at position {idx_start}")
     
     if idx_start == -1:
         return None

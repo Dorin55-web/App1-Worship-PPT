@@ -1,12 +1,47 @@
+# Python
 venv/
 __pycache__/
 *.pyc
-output/
-data/history.json
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+.env
+.venv
+env/
+ENV/
+
+# IDE
 .idea/
 .vscode/
-*.egg-info/
-dist/
+*.swp
+*.swo
+*~
+
+# Build artifacts
 build/
-.claude/
-.cursor/
+dist/
+dist_pack/
+*.egg-info/
+*.spec
+
+# Application specific
+output/
+data/history.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# PyInstaller
+*.manifest
+*.exe
+
+# Coverage
+htmlcov/
+.coverage
