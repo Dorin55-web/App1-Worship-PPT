@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config.settings import load_config, ensure_directories, save_config
 from services.song_service import SongService
 from services.hotkey_manager import HotkeyManager
+from services.search_service import get_search_service
 from core.scraper import scrape_song
 from core.parser import parse_song
 from core.font_calculator import calculate_font_size
@@ -55,6 +56,10 @@ class WorshipPPTApp:
         self.hotkey_manager.set_callback(self._on_hotkey_url)
         self._hotkey_check_running = False
         self._pending_hotkey_url = None  # URL primit prin hotkey, procesat în UI loop
+        
+        # Search service pentru cautare locala
+        search_dir = self.config.get("app", {}).get("search_directory", "")
+        self.search_service = get_search_service(search_dir if search_dir else None)
         
         self.setup_ui()
     
@@ -190,6 +195,20 @@ class WorshipPPTApp:
             on_click=self.on_home_click,
         )
         
+        # Buton SEARCH
+        self.search_btn = ft.Container(
+            content=ft.Column(
+                [
+                    ft.Text("🔍", size=24),
+                    ft.Text("Search", size=10, color=self.COLOR_TEXT_GRAY),
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=4,
+            ),
+            padding=10,
+            on_click=self.on_search_click,
+        )
+        
         # Buton Setări (jos) - doar iconiță
         settings_btn = ft.Container(
             content=ft.Text("⚙️", size=24),
@@ -204,6 +223,8 @@ class WorshipPPTApp:
                     ft.Divider(height=1, color=self.COLOR_BORDER),
                     ft.Container(height=20),
                     self.home_btn,
+                    ft.Container(height=10),
+                    self.search_btn,
                     ft.Container(expand=True),
                     settings_btn,
                     ft.Container(height=10),
@@ -286,7 +307,22 @@ class WorshipPPTApp:
         self.page.update()
     
     def _create_content_area(self):
-        """Creează zona principală de conținut."""
+        """Creează zona principală de conținut cu suport pentru multiple views."""
+        # Creează views separate
+        self.home_view = self._create_home_view()
+        self.search_view = self._create_search_view()
+        
+        # Container principal care va afișa view-ul activ
+        self.content_container = ft.Container(
+            content=self.home_view,
+            expand=True,
+            bgcolor=self.COLOR_BG_DARK,
+        )
+        
+        return self.content_container
+    
+    def _create_home_view(self):
+        """Creează view-ul principal (HOME)."""
         # Header cu input URL
         header = self._create_header()
         
@@ -299,19 +335,116 @@ class WorshipPPTApp:
         # Status bar
         status_bar = self._create_status_bar()
         
-        return ft.Container(
-            content=ft.Column(
-                [
-                    header,
-                    preview_section,
-                    toolbar,
-                    status_bar,
-                ],
-                spacing=0,
-                expand=True,
-            ),
+        return ft.Column(
+            [
+                header,
+                preview_section,
+                toolbar,
+                status_bar,
+            ],
+            spacing=0,
             expand=True,
+        )
+    
+    def _create_search_view(self):
+        """Creează view-ul de căutare (SEARCH) - design modern integrat."""
+        
+        # Header compact cu search input (similar cu home header)
+        self.search_input = ft.TextField(
+            hint_text="Search songs...",
+            border_color=self.COLOR_BORDER,
+            focused_border_color=self.COLOR_CYAN,
+            text_size=12,
+            expand=True,
+            height=35,
+            on_submit=self._on_search_submit,
+        )
+        
+        search_btn = ft.ElevatedButton(
+            "Search",
+            on_click=self._on_search_submit,
+            style=ft.ButtonStyle(
+                bgcolor=self.COLOR_CYAN,
+                color="#000000",
+                padding=12,
+                text_style=ft.TextStyle(weight=ft.FontWeight.BOLD, size=12),
+            ),
+            height=35,
+        )
+        
+        search_header = ft.Container(
+            content=ft.Row(
+                [
+                    ft.Container(width=10),
+                    self.search_input,
+                    ft.Container(width=8),
+                    search_btn,
+                    ft.Container(width=10),
+                ],
+            ),
+            padding=10,
             bgcolor=self.COLOR_BG_DARK,
+            border=ft.border.only(bottom=ft.border.BorderSide(1, self.COLOR_BORDER)),
+        )
+        
+        # Status bar (similar cu home status)
+        self.search_status = ft.Text(
+            "Ready",
+            size=12,
+            color=self.COLOR_TEXT_WHITE,
+            width=200,
+            text_align=ft.TextAlign.CENTER,
+        )
+        
+        status_row = ft.Container(
+            content=ft.Row(
+                [
+                    ft.Text("●", size=10, color=self.COLOR_GREEN),
+                    ft.Container(width=5),
+                    self.search_status,
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+            ),
+            width=250,
+        )
+        
+        # Info header
+        info_header = ft.Container(
+            content=ft.Row(
+                [
+                    ft.Container(width=40),
+                    ft.Column(
+                        [
+                            ft.Text("SEARCH", size=10, color=self.COLOR_TEXT_GRAY),
+                            ft.Text("Local Collection", size=12, color=self.COLOR_TEXT_WHITE),
+                        ],
+                        spacing=2,
+                    ),
+                    ft.Container(expand=True),
+                    status_row,
+                    ft.Container(width=40),
+                ],
+            ),
+            padding=15,
+            bgcolor=self.COLOR_BG_CARD,
+            border=ft.border.only(bottom=ft.border.BorderSide(1, self.COLOR_BORDER)),
+        )
+        
+        # Results list
+        self.search_results = ft.ListView(
+            expand=True,
+            spacing=6,
+            padding=15,
+        )
+        
+        return ft.Column(
+            [
+                search_header,
+                info_header,
+                self.search_results,
+            ],
+            spacing=0,
+            expand=True,
         )
     
     def _create_header(self):
@@ -575,6 +708,441 @@ class WorshipPPTApp:
         self.active_tab = "home"
         self.home_btn.bgcolor = self.COLOR_BG_CARD
         self.home_btn.border = ft.border.only(left=ft.border.BorderSide(3, self.COLOR_CYAN))
+        self.search_btn.bgcolor = None
+        self.search_btn.border = None
+        
+        # Comuta la home view
+        self.content_container.content = self.home_view
+        
+        # Arata slide list panel daca sunt slide-uri incarcate
+        if self.slides_data:
+            self.slide_list_panel.visible = True
+        
+        self.page.update()
+    
+    def on_search_click(self, e):
+        """Handler pentru click pe SEARCH - comuta la view-ul de cautare."""
+        self.active_tab = "search"
+        self.home_btn.bgcolor = None
+        self.home_btn.border = None
+        self.search_btn.bgcolor = self.COLOR_BG_CARD
+        self.search_btn.border = ft.border.only(left=ft.border.BorderSide(3, self.COLOR_CYAN))
+        
+        # Comuta la search view
+        self.content_container.content = self.search_view
+        
+        # Ascunde slide list panel in modul search
+        self.slide_list_panel.visible = False
+        
+        self.page.update()
+    
+    def _get_background_type(self, filepath: str) -> str:
+        """Analizeaza tipul de fundal al unui fisier PowerPoint.
+        
+        Returns:
+            'black' - fundal negru (generat de aplicatia noastra)
+            'white' - fundal alb
+            'color' - fundal colorat sau imagini
+            'unknown' - nu s-a putut determina
+        """
+        try:
+            from pptx import Presentation
+            
+            # Pentru .ppt (format vechi) - python-pptx nu il poate citi
+            if filepath.lower().endswith('.ppt'):
+                # Scanam continutul binar dupa semnaturi de imagini
+                with open(filepath, 'rb') as f:
+                    content = f.read()
+                
+                # Semnaturi imagini comune
+                has_png = b'\x89PNG' in content
+                has_jpeg = b'\xff\xd8\xff' in content
+                has_gif = b'GIF8' in content
+                
+                if has_png or has_jpeg or has_gif:
+                    return 'color'  # Contine imagini = fundal colorat
+                
+                # Daca nu are imagini, verificam dimensiunea
+                file_size = os.path.getsize(filepath)
+                if file_size < 30 * 1024:  # Mai putin de 30KB - probabil text simplu
+                    return 'white'
+                else:
+                    return 'color'  # Fisierele mai mari fara imagini detectate - presupunem color
+            
+            # Pentru .pptx folosim python-pptx
+            prs = Presentation(filepath)
+            
+            black_count = 0
+            white_count = 0
+            color_count = 0
+            image_count = 0
+            
+            for slide in prs.slides:
+                background = slide.background
+                fill = background.fill
+                
+                if fill.type is None:
+                    continue
+                elif fill.type == 1:  # SOLID
+                    try:
+                        color = fill.fore_color.rgb
+                        if color:
+                            r, g, b = color[0], color[1], color[2]
+                            if r < 50 and g < 50 and b < 50:
+                                black_count += 1
+                            elif r > 200 and g > 200 and b > 200:
+                                white_count += 1
+                            else:
+                                color_count += 1
+                    except:
+                        pass
+                elif fill.type == 6:  # PICTURE
+                    image_count += 1
+                else:
+                    color_count += 1
+            
+            # Determina tipul predominant
+            total = black_count + white_count + color_count + image_count
+            if total == 0:
+                return 'unknown'
+            
+            if image_count > 0:
+                return 'color'  # Imagini = color
+            elif black_count > white_count and black_count > color_count:
+                return 'black'
+            elif white_count > black_count and white_count > color_count:
+                return 'white'
+            else:
+                return 'color'
+                
+        except Exception as e:
+            return 'unknown'
+    
+    def _on_search_submit(self, e=None):
+        """Handler pentru submit in search view."""
+        query = self.search_input.value.strip() if self.search_input else ""
+        if len(query) < 2:
+            self.search_status.value = "Type at least 2 characters"
+            self.search_status.color = self.COLOR_TEXT_GRAY
+            self.search_results.controls = []
+            self.page.update()
+            return
+        
+        if not self.search_service.is_ready():
+            self.search_status.value = "Search service unavailable. Check settings."
+            self.search_status.color = self.COLOR_RED
+            self.search_results.controls = []
+            self.page.update()
+            return
+        
+        self.search_status.value = "Searching..."
+        self.search_status.color = self.COLOR_CYAN
+        self.page.update()
+        
+        results = self.search_service.search_by_title(query, limit=20)
+        
+        if not results:
+            self.search_status.value = "No results found"
+            self.search_status.color = self.COLOR_TEXT_GRAY
+            self.search_results.controls = []
+            self.page.update()
+            return
+        
+        self.search_status.value = f"{len(results)} results"
+        self.search_status.color = self.COLOR_GREEN
+        
+        # Analizeaza fundalurile si sorteaza
+        self.search_status.value = f"Analyzing {len(results)} results..."
+        self.page.update()
+        
+        # Adauga tipul de fundal la fiecare rezultat
+        for r in results:
+            filepath = self.search_service.get_file_path(r['fisier'])
+            r['bg_type'] = self._get_background_type(filepath)
+        
+        # Sorteaza: black first, then white, then color
+        bg_priority = {'black': 0, 'white': 1, 'color': 2, 'unknown': 3}
+        results.sort(key=lambda x: (bg_priority.get(x.get('bg_type', 'unknown'), 3), -x['scor']))
+        
+        self.search_status.value = f"{len(results)} results"
+        
+        self.search_results.controls = []
+        for r in results:
+            scor_pct = int(r['scor'] * 100)
+            scor_color = '#00aa00' if scor_pct >= 80 else '#00d4ff' if scor_pct >= 50 else self.COLOR_TEXT_GRAY
+            
+            # Badge pentru tipul de fundal
+            bg_type = r.get('bg_type', 'unknown')
+            bg_label = {
+                'black': 'Dark BG',
+                'white': 'Light BG', 
+                'color': 'Color/Image',
+                'unknown': '?'
+            }.get(bg_type, '?')
+            
+            bg_badge_color = {
+                'black': '#333333',
+                'white': '#ffffff',
+                'color': '#ff6b6b',
+                'unknown': '#666666'
+            }.get(bg_type, '#666666')
+            
+            bg_text_color = '#ffffff' if bg_type == 'black' else '#000000' if bg_type == 'white' else '#ffffff'
+            
+            # Score badge
+            score_badge = ft.Container(
+                content=ft.Text(
+                    f"{scor_pct}%",
+                    size=10,
+                    weight=ft.FontWeight.BOLD,
+                    color="#000000" if scor_pct >= 50 else self.COLOR_TEXT_WHITE,
+                ),
+                bgcolor=self.COLOR_CYAN if scor_pct >= 50 else self.COLOR_BORDER,
+                border_radius=12,
+                padding=ft.padding.symmetric(horizontal=8, vertical=2),
+            )
+            
+            # Background type badge
+            bg_badge = ft.Container(
+                content=ft.Text(
+                    bg_label,
+                    size=9,
+                    weight=ft.FontWeight.BOLD,
+                    color=bg_text_color,
+                ),
+                bgcolor=bg_badge_color,
+                border_radius=12,
+                padding=ft.padding.symmetric(horizontal=6, vertical=2),
+            )
+            
+            result_card = ft.Container(
+                content=ft.Column(
+                    [
+                        ft.Row(
+                            [
+                                ft.Column(
+                                    [
+                                        ft.Text(
+                                            r['titlu'][:70] + ('...' if len(r['titlu']) > 70 else ''),
+                                            size=13,
+                                            weight=ft.FontWeight.BOLD,
+                                            color=self.COLOR_TEXT_WHITE,
+                                        ),
+                                        ft.Text(
+                                            r['fisier'],
+                                            size=10,
+                                            color=self.COLOR_TEXT_GRAY,
+                                        ),
+                                    ],
+                                    spacing=2,
+                                    expand=True,
+                                ),
+                                ft.Row(
+                                    [bg_badge, score_badge],
+                                    spacing=5,
+                                ),
+                            ],
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                        ft.Divider(height=1, color=self.COLOR_BORDER),
+                        ft.Text(
+                            r['vers'][:150] + ('...' if len(r['vers']) > 150 else ''),
+                            size=11,
+                            color=self.COLOR_TEXT_GRAY,
+                        ),
+                    ],
+                    spacing=8,
+                ),
+                padding=15,
+                bgcolor=self.COLOR_BG_CARD,
+                border=ft.border.all(1, self.COLOR_BORDER),
+                border_radius=8,
+                on_click=lambda e, f=r['fisier']: self._open_search_result(f),
+                ink=True,
+            )
+            self.search_results.controls.append(result_card)
+        
+        self.page.update()
+    
+    def _open_search_result(self, filename: str):
+        """Deschide fisierul PowerPoint din rezultatele cautarii si il aduce in prim-plan."""
+        filepath = self.search_service.get_file_path(filename)
+        if os.path.exists(filepath):
+            try:
+                import subprocess
+                import time
+                
+                self.search_status.value = f"Opening: {filename}..."
+                self.page.update()
+                
+                # Foloseste subprocess cu 'start' pentru a deschide in modul Windows standard
+                # 'start "" "filepath"' deschide fisierul cu aplicatia asociata
+                subprocess.Popen(
+                    f'start "" "{filepath}"',
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+                
+                self.search_status.value = f"Deschis: {filename}"
+                self.search_status.color = self.COLOR_GREEN
+                
+            except Exception as e:
+                self.search_status.value = f"Eroare la deschidere: {e}"
+                self.search_status.color = self.COLOR_RED
+        else:
+            self.search_status.value = f"Fisier negasit: {filename}"
+            self.search_status.color = self.COLOR_RED
+        self.page.update()
+    
+    def _check_local_song(self, title: str, lyrics: str = ""):
+        """Verifica daca cantarea exista in colectia locala."""
+        if not self.search_service.is_ready():
+            return []
+        
+        # Cauta dupa titlu
+        results = self.search_service.search_by_title(title, limit=5)
+        
+        # Daca nu gaseste sau scorul e mic, cauta si dupa versuri
+        if (not results or results[0]['scor'] < 0.7) and lyrics:
+            lyrics_results = self.search_service.search_by_lyrics(lyrics, limit=5)
+            # Adauga doar rezultate noi
+            existing_files = {r['fisier'] for r in results}
+            for r in lyrics_results:
+                if r['fisier'] not in existing_files:
+                    results.append(r)
+            
+            # Sorteaza dupa scor
+            results.sort(key=lambda x: x['scor'], reverse=True)
+        
+        return results[:5]
+    
+    def _show_local_results(self, title: str, results: list):
+        """Arata dialog cu rezultatele cautarii locale cand se incarca o cantare."""
+        def close_dlg(e):
+            dlg.open = False
+            self.page.update()
+        
+        def open_file(e, filename):
+            self._open_search_result(filename)
+            dlg.open = False
+            self.page.update()
+        
+        def continue_generate(e):
+            dlg.open = False
+            self.page.update()
+        
+        results_column = ft.Column(
+            scroll=ft.ScrollMode.AUTO,
+            spacing=6,
+            height=250,
+        )
+        
+        for r in results:
+            scor_pct = int(r['scor'] * 100)
+            
+            # Score badge
+            score_badge = ft.Container(
+                content=ft.Text(
+                    f"{scor_pct}%",
+                    size=10,
+                    weight=ft.FontWeight.BOLD,
+                    color="#000000" if scor_pct >= 50 else self.COLOR_TEXT_WHITE,
+                ),
+                bgcolor=self.COLOR_CYAN if scor_pct >= 50 else self.COLOR_BORDER,
+                border_radius=12,
+                padding=ft.padding.symmetric(horizontal=8, vertical=2),
+            )
+            
+            result_card = ft.Container(
+                content=ft.Row(
+                    [
+                        ft.Column(
+                            [
+                                ft.Text(
+                                    r['titlu'][:50] + ('...' if len(r['titlu']) > 50 else ''),
+                                    size=12,
+                                    weight=ft.FontWeight.BOLD,
+                                    color=self.COLOR_TEXT_WHITE,
+                                ),
+                                ft.Text(
+                                    r['fisier'],
+                                    size=9,
+                                    color=self.COLOR_TEXT_GRAY,
+                                ),
+                            ],
+                            spacing=2,
+                            expand=True,
+                        ),
+                        score_badge,
+                    ],
+                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                ),
+                padding=12,
+                bgcolor=self.COLOR_BG_CARD,
+                border=ft.border.all(1, self.COLOR_BORDER),
+                border_radius=8,
+                on_click=lambda e, f=r['fisier']: open_file(e, f),
+                ink=True,
+            )
+            results_column.controls.append(result_card)
+        
+        dlg = ft.AlertDialog(
+            title=ft.Text(
+                "Song Found in Local Collection",
+                color=self.COLOR_TEXT_WHITE,
+                weight=ft.FontWeight.BOLD,
+                size=16,
+            ),
+            bgcolor=self.COLOR_BG_CARD,
+            content=ft.Container(
+                content=ft.Column(
+                    [
+                        ft.Text(
+                            f"'{title[:40]}{'...' if len(title) > 40 else ''}'",
+                            size=13,
+                            color=self.COLOR_CYAN,
+                            weight=ft.FontWeight.BOLD,
+                        ),
+                        ft.Divider(color=self.COLOR_BORDER),
+                        ft.Text(
+                            f"Found {len(results)} result(s) in your local collection:",
+                            size=12,
+                            color=self.COLOR_TEXT_GRAY,
+                        ),
+                        ft.Container(
+                            content=results_column,
+                            border=ft.border.all(1, self.COLOR_BORDER),
+                            border_radius=8,
+                            padding=8,
+                            bgcolor=self.COLOR_BG_DARK,
+                        ),
+                        ft.Text(
+                            "Or generate a new version:",
+                            size=11,
+                            color=self.COLOR_TEXT_GRAY,
+                            italic=True,
+                        ),
+                    ],
+                    spacing=10,
+                    tight=True,
+                ),
+                bgcolor=self.COLOR_BG_CARD,
+                width=500,
+                height=420,
+            ),
+            actions=[
+                ft.TextButton(
+                    "Generate New",
+                    on_click=continue_generate,
+                    style=ft.ButtonStyle(color=self.COLOR_CYAN),
+                ),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+            open=True,
+        )
+        
+        self.page.overlay.append(dlg)
         self.page.update()
     
     def on_settings_click(self, e):
@@ -596,6 +1164,12 @@ class WorshipPPTApp:
                 self.output_dir = "./output"
                 self.config["app"]["default_output_dir"] = "./output"
 
+            # Save search directory setting
+            search_dir = search_dir_input.value.strip()
+            if search_dir:
+                self.config["app"]["search_directory"] = search_dir
+                self.search_service.set_search_directory(search_dir)
+            
             # Save auto open setting
             self.config["app"]["auto_open_ppt"] = auto_open_switch.value
             save_config(self.config)
@@ -628,6 +1202,18 @@ class WorshipPPTApp:
             inactive_track_color=self.COLOR_BORDER,
         )
         
+        # Search directory input
+        search_dir_value = self.config.get("app", {}).get("search_directory", "")
+        search_dir_input = ft.TextField(
+            label="Search Directory (Local Songs)",
+            value=search_dir_value,
+            hint_text="Path to folder containing .ppt/.pptx files",
+            border_color=self.COLOR_BORDER,
+            focused_border_color=self.COLOR_CYAN,
+            text_size=14,
+            expand=True,
+        )
+        
         dlg = ft.AlertDialog(
             title=ft.Text("Settings", color=self.COLOR_TEXT_WHITE, weight=ft.FontWeight.BOLD),
             bgcolor=self.COLOR_BG_CARD,
@@ -647,6 +1233,15 @@ class WorshipPPTApp:
                         ft.Divider(color=self.COLOR_BORDER),
                         ft.Text("Export Options:", size=14, color=self.COLOR_TEXT_WHITE, weight=ft.FontWeight.BOLD),
                         auto_open_switch,
+                        ft.Divider(color=self.COLOR_BORDER),
+                        ft.Text("Search Settings:", size=14, color=self.COLOR_TEXT_WHITE, weight=ft.FontWeight.BOLD),
+                        search_dir_input,
+                        ft.Text(
+                            "Path to folder with PowerPoint songs for local search",
+                            size=11,
+                            color=self.COLOR_TEXT_GRAY,
+                            italic=True,
+                        ),
                     ],
                     tight=True,
                     spacing=15,
@@ -714,6 +1309,11 @@ class WorshipPPTApp:
             # Scrape și parse
             title, raw_text = scrape_song(url)
             self.current_song = parse_song(title, raw_text)
+            
+            # Verifica daca cantarea exista in colectia locala
+            local_results = self._check_local_song(title, raw_text[:200])
+            if local_results:
+                self._show_local_results(title, local_results)
             
             # Calculează fontul optim
             font_calc = calculate_font_size(self.current_song, use_caps=False)
